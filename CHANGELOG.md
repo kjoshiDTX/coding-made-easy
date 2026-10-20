@@ -1,5 +1,13 @@
 # Changelog
 
+## Interview patterns and generation usage — 2026-10-20
+
+- Separated compact interview-pattern planning from project curricula, with optional refreshers/extensions and enforced per-ticket core bounds.
+- Added a backed-up, idempotent revision of the old Python Merge Intervals path: four core skills, with all original concepts and saved work retained under Previous path.
+- Added a relevant Princeton interval source for endpoint, overlap and containment lessons and constrained generation to supplied evidence; strict source publication checks remain required.
+- Recorded future generation/audit/repair token usage, including failures and missing usage, in scoped local metadata and the UI. No default model change or new automatic paid retry.
+- Added design research, usage estimates and regression tests for scope, progress-preserving migration and usage accounting. Validation outcomes are recorded in the workspace verification notes.
+
 ## Visual refresh — 2026-10-20
 
 - Established an ivory, espresso, and bronze identity with a custom typographic monogram, editorial serif headings, warm paper readings, a dark working editor, and a light tutor panel.

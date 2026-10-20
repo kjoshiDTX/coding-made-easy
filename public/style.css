@@ -63,3 +63,5 @@ dialog{background:#faf6ee;color:#4e402b;border:1px solid #d4c1a0;border-radius:1
 
 /* Keep the quiet palette readable at small UI sizes. */
 .generate-panel>p:not(.eyebrow){color:#7e6b51}#generate-status{color:#826e50!important}.tutor-intro p{color:#806d52}.interactive-visual>p:not(.visual-counter){color:#826d4d}.interactive-visual label{color:#8b7049}#question::placeholder{color:#8b7352}dialog p{color:#806b4d}.brand-wordmark small{color:#806c4e}
+
+.ticket-concepts details{margin:12px 0;color:var(--muted);font-size:12px}.ticket-concepts summary{cursor:pointer;padding:8px 12px;line-height:1.5}.generation-usage{font-size:12px;line-height:1.6;padding:10px 16px;border:1px solid var(--line);border-radius:8px;color:var(--muted)}

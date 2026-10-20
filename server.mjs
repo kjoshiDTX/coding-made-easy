@@ -11,6 +11,7 @@ import {bpeProject,bpeSpecification} from './example-project.mjs';
 import {randomBytes} from 'node:crypto';
 import {ChatGPTAuth} from './auth.mjs';
 import {AI} from './ai.mjs';
+import {lastGenerationUsage} from './usage.mjs';
 import {Runner} from './runner.mjs';
 import {Library,publicLesson} from './library.mjs';
 const directory=path.dirname(fileURLToPath(import.meta.url));
@@ -68,7 +69,7 @@ const server=http.createServer(async(req,res)=>{
      try{return json(res,200,{lesson:publicLesson(await library.ensurePrediction(b.project,b.id,b.model)),progress:library.progress(b.project,b.id)});}finally{generationBusy=false;}
     case '/api/generate':
      if(generationBusy)throw Error('A lesson or learning path is already being generated.');generationBusy=true;
-     try{return json(res,200,{lesson:publicLesson(await library.generate(b.project,b.id,b.model)),progress:library.progress(b.project,b.id)});}finally{generationBusy=false;}
+     try{return json(res,200,{lesson:publicLesson(await library.generate(b.project,b.id,b.model)),progress:library.progress(b.project,b.id),generationUsage:await lastGenerationUsage(workspace,b.project,b.id)});}finally{generationBusy=false;}
     case '/api/draft':return json(res,200,{progress:await library.saveDraft(b.project,b.id,b.stage,b.code)});
     case '/api/grade':return json(res,200,{result:await library.grade(b),progress:library.progress(b.project,b.id)});
     case '/api/hint':return json(res,200,await library.hint(b.project,b.id,b.stage));
@@ -90,19 +91,19 @@ const server=http.createServer(async(req,res)=>{
   }
   if(req.method==='GET'&&url.pathname.startsWith('/api/')){
    if(!cookie)return json(res,403,{error:'Open Concept Lab first.'});
-   if(url.pathname==='/api/status')return json(res,200,{...auth.status(),csrf});
+   if(url.pathname==='/api/status')return json(res,200,{...auth.status(),csrf,generationBusy,tutorBusy});
    if(url.pathname==='/api/models')return json(res,200,{models:ai.catalog||await ai.models()});
    if(url.pathname==='/api/projects')return json(res,200,{projects:library.data.projects,progress:library.data.progress,selection:await readJSON(workspace.resolve('.workspace/selection.json')),categories,runtimes:Object.fromEntries(Object.entries(runtimePaths()).filter(([key])=>['go','python','javac','cpp','rust'].includes(key)).map(([key,value])=>[key,!!value]))});
-   if(url.pathname==='/api/lesson'){const project=url.searchParams.get('project'),id=url.searchParams.get('id');return json(res,200,{lesson:library.get(project,id)?.evidence?publicLesson(library.get(project,id)):null,needsAudit:!!library.get(project,id)&&!library.get(project,id).evidence,progress:library.progress(project,id),chat:await workspace.conversation(library.project(project),id)});}
+   if(url.pathname==='/api/lesson'){const project=url.searchParams.get('project'),id=url.searchParams.get('id');return json(res,200,{lesson:library.get(project,id)?.evidence?publicLesson(library.get(project,id)):null,needsAudit:!!library.get(project,id)&&!library.get(project,id).evidence,generationUsage:await lastGenerationUsage(workspace,project,id),progress:library.progress(project,id),chat:await workspace.conversation(library.project(project),id)});}
   }
   const pages={'/':'index.html','/connect':'connect.html'};
   if(req.method==='GET'&&pages[url.pathname]){
    res.setHeader('Set-Cookie',`concept_session=${session}; HttpOnly; SameSite=Strict; Path=/`);
    res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"});return res.end(await readFile(path.join(directory,'public',pages[url.pathname])));
   }
-  if(req.method==='GET'&&['/app.js','/learn.js','/problem.js','/style.css','/connect.js','/connect.css','/visual.js'].includes(url.pathname)){res.writeHead(200,{'Content-Type':url.pathname.endsWith('.js')?'text/javascript':'text/css','Cache-Control':'no-cache'});return res.end(await readFile(path.join(directory,'public',url.pathname)));}
+  if(req.method==='GET'&&['/app.js','/path.js','/learn.js','/problem.js','/style.css','/connect.js','/connect.css','/visual.js'].includes(url.pathname)){res.writeHead(200,{'Content-Type':url.pathname.endsWith('.js')?'text/javascript':'text/css','Cache-Control':'no-cache'});return res.end(await readFile(path.join(directory,'public',url.pathname)));}
   json(res,404,{error:'Not found'});
- }catch(e){if(!res.headersSent)json(res,400,{error:e.message||'Request failed.'});else res.end();}
+ }catch(e){if(!res.headersSent)json(res,400,{error:e.message||'Request failed.',generationUsage:e.generationUsage});else res.end();}
 });
 let stopping=false;async function shutdown(){if(stopping)return;stopping=true;server.close(async()=>{await library.writes;await workspace.writes;await releaseWorkspaceLock();process.exit(0);});}
 process.on('SIGTERM',shutdown);process.on('SIGINT',shutdown);
