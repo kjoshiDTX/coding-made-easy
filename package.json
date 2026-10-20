@@ -1,11 +1,12 @@
 {
-  "name": "concept-lab",
-  "version": "0.1.0",
+  "name": "coding-made-easy",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
     "test": "node --test",
+    "prepare-qwen": "node scripts/prepare-qwen.mjs",
     "doctor": "node scripts/doctor.mjs",
     "package": "python3 scripts/package-release.py"
   },

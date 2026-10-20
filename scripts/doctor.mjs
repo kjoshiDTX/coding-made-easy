@@ -4,7 +4,7 @@ const paths=runtimePaths();let errors=0;
 console.log('Concept Lab setup check\n');
 if(process.platform!=='darwin'){console.log('This beta supports macOS only. Linux and Windows runners are not implemented.');errors++;}
 if(Number(process.versions.node.split('.')[0])<20){console.log('Node.js 20+ is required.');errors++;}
-for(const [name,exe,args] of [['Node.js',paths.node,['--version']],['Go',paths.go,['version']],['Python',paths.python,['--version']]]){
+for(const [name,exe,args] of [['Node.js',paths.node,['--version']],['Go',paths.go,['version']],['Python',paths.python,['--version']],['Java compiler',paths.javac,['--version']],['Java runtime',paths.java,['--version']],['C++',paths.cpp,['--version']],['Rust',paths.rust,['--version']]]){
  if(!exe){console.log(`${name}: missing. Install it from its official website or package manager, then reopen your terminal.`);errors++;continue;}
  const r=spawnSync(exe,args,{encoding:'utf8',timeout:10000});if(r.status!==0){console.log(`${name}: executable found but did not run. Set a working path using CONCEPT_LAB_GO or CONCEPT_LAB_PYTHON.`);errors++;continue;}
  const version=(r.stdout||r.stderr).trim();console.log(`${name}: ${version}`);
