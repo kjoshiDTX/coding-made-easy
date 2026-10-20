@@ -11,13 +11,16 @@ export const pythonInlineSources=[
 export function lessonSourceUrls(project,concept){
  const domain=/interval|closed.interval/i.test(concept.title)?[intervalSource]:[];
  const inline=project.track==='interview'&&project.language==='python'?pythonInlineSources:[];
- return [...new Set([...domain,...inline,...concept.sourceUrls])].slice(0,6);
+ const algorithm=/merge.*interval|interval.*merge/i.test(project.title||'')&&/scan|invariant|transfer/i.test(concept.title)?['https://www.geeksforgeeks.org/dsa/merging-intervals/',intervalSource]:[];
+ const selected=[...new Set([...algorithm,...domain,...concept.sourceUrls].map(url=>url.replace(/^https:\/\/docs\.python\.org\/3\/howto\/sorting\/?$/, 'https://docs.python.org/3/howto/sorting.html')))];
+ return inline.length?[...new Set([...selected.slice(0,2),...inline])].slice(0,6):selected.slice(0,6);
 }
 export function planningPolicy(track,language){
  if(track!=='interview')return `For each personal project ticket work backwards from its concrete deliverable and construct a prerequisite-complete foundational curriculum for a learner new to ${language}. Aim for 15–40 concepts across a substantial specification, fewer when sufficient; do not pad a small task.`;
  return `INTERVIEW TRACK: First identify the underlying data structure and reusable algorithmic pattern targeted by each problem. Aim for 3–6 CORE concepts per ticket, maximum 8 including transitive prerequisites. Use fewer when sufficient. Build intuition from first principles: representation and essential operations; the pattern's trigger and mental model; the invariant and state transitions; independent application with edge cases and complexity. These are skills, not one module per detail in the target answer. For a data-structure problem teach its model and relevant operations before the algorithm. Explain necessary ${language} syntax inline in the first example, without assuming proficiency. Do not make installation, assignment, booleans, loops, functions, testing, or each edge case separate required concepts. Supply at most 3 OPTIONAL refreshers only when useful. Adjacent algorithms (e.g. event sweeps vs interval merging) belong to at most 2 optional extensions, not the prerequisite chain. Final practice must change the surface story or constraints to test transfer without revealing the target solution. Do not turn one question into a complete course in the language or data structure. Mark each concept kind as core, refresher, or extension. Ticket conceptIds include optional concepts for discoverability; core concepts must depend only on core concepts.`;
 }
-export function validateInterviewScope(plan){
+export function validateInterviewScope(plan,{singleQuestion=false}={}){
+ if(singleQuestion&&plan.tickets.length!==1)throw Error('Import one interview question at a time; a planner cannot expand it into multiple paid preparation jobs.');
  for(const c of plan.concepts){c.kind??='core';if(!['core','refresher','extension'].includes(c.kind))throw Error('Invalid interview concept kind.');}
  for(const t of plan.tickets){
   const all=new Set();const add=id=>{if(all.has(id))return;all.add(id);plan.concepts.find(c=>c.id===id).prerequisites.forEach(add);};t.conceptIds.forEach(add);

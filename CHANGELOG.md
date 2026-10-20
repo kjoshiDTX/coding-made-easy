@@ -1,5 +1,12 @@
 # Changelog
 
+## Upfront interview preparation — 2026-10-20
+
+- Automatically prepare a new interview question’s core lessons after outlining; add persistent status, Stop and explicit Resume for existing paths. Reuse audited cached lessons; keep personal lessons and optional extensions on demand.
+- Enforce at most 8 core lessons and 24 total outline/generation/repair/audit requests per question, pinned model, provider output caps, pre-request reservations and the learner-approved $2 API-equivalent default ($1 option). Persist spend across retries, duplicate imports and restarts; stop on unknown usage, audit failure or budget exhaustion.
+- Add curated pattern resources from NeetCode, VisuAlgo, GeeksforGeeks and CP-Algorithms, stronger recognition/invariant/transfer guidance, and relevant fetched interval-algorithm evidence. Supplemental links are distinguished from audited sources.
+- Add budget, cache reuse, cancellation, output-cap, outline-idempotency and resource regression checks. No progress format changed; budget sidecars are versioned and backed up. Validation outcomes are recorded in workspace verification notes.
+
 ## Python Boolean evidence follow-up — 2026-10-20
 
 - A second explicitly approved interval attempt passed executable checks but was withheld for missing source support for Python Boolean comparison results and `and` semantics.

@@ -77,3 +77,11 @@ test('inline Python syntax sources supplement compact interview lessons without 
  assert.ok(other.includes(intervalSource));assert.ok(!other.some(url=>url.includes('python.org')));
  const many=lessonSourceUrls({track:'interview',language:'python'},{title:'List model',sourceUrls:Array.from({length:8},(_,i)=>'https://docs.python.org/3/?'+i)});assert.ok(many.length<=6);for(const url of pythonInlineSources)assert.ok(many.includes(url));
 });
+
+test('a single question cannot become multiple preparation jobs and sorted scans retain their domain reference',()=>{
+ const plan={concepts:[{id:'a',kind:'core',prerequisites:[]}],tickets:[{id:'a',conceptIds:['a']},{id:'b',conceptIds:['a']}]};assert.throws(()=>validateInterviewScope(plan,{singleQuestion:true}),/one interview question/);
+ const urls=lessonSourceUrls({track:'interview',language:'python',title:'merge intervals'},{title:'The sorted-scan pattern and its invariant',sourceUrls:[intervalSource]});
+ assert.ok(urls.includes('https://www.geeksforgeeks.org/dsa/merging-intervals/'));assert.ok(urls.includes(intervalSource));for(const url of pythonInlineSources)assert.ok(urls.includes(url));assert.equal(urls.length,6);
+});
+
+test('old sorting-guide URLs are corrected without changing saved concept data',()=>{const concept={title:'Ordering',sourceUrls:['https://docs.python.org/3/howto/sorting/']};const urls=lessonSourceUrls({track:'interview',language:'python'},concept);assert.ok(urls.includes('https://docs.python.org/3/howto/sorting.html'));assert.equal(concept.sourceUrls[0],'https://docs.python.org/3/howto/sorting/');});

@@ -11,6 +11,7 @@ import {bpeProject,bpeSpecification} from './example-project.mjs';
 import {randomBytes} from 'node:crypto';
 import {ChatGPTAuth} from './auth.mjs';
 import {AI} from './ai.mjs';
+import {Preparation} from './preparation.mjs';
 import {lastGenerationUsage} from './usage.mjs';
 import {Runner} from './runner.mjs';
 import {Library,publicLesson} from './library.mjs';
@@ -23,6 +24,7 @@ const auth=new ChatGPTAuth({directory:authDirectory,callback:`${origin}/auth/cal
 const ai=new AI(auth),runner=new Runner(workspace.resolve('cache/runner'),{resourcesDirectory:workspace.resolve('cache/resources')}),library=new Library({directory:path.join(directory,'.local'),workspace,ai,runner});await library.init();
 if(!library.data.projects.some(p=>p.id===bpeProject.id)){library.data.projects.unshift(structuredClone(bpeProject));await library.save();}
 const initialBpe=library.data.projects.find(p=>p.id===bpeProject.id);if(initialBpe&&!initialBpe.tickets[0].task){initialBpe.tickets[0].task=bpeSpecification;await library.save();}
+const preparation=new Preparation({library,workspace});
 const session=randomBytes(32).toString('hex'),csrf=randomBytes(32).toString('hex');let generationBusy=false,tutorBusy=false;
 const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data));};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -62,13 +64,19 @@ const server=http.createServer(async(req,res)=>{
     case '/api/auth/start':return json(res,200,{url:await auth.begin()});
     case '/api/auth/disconnect':ai.catalog=null;return json(res,200,await auth.disconnect());
     case '/api/import':
-     if(generationBusy)throw Error('A lesson or learning path is already being generated.');generationBusy=true;
-     try{return json(res,200,{project:await library.importProject(b)});}finally{generationBusy=false;}
+     if(generationBusy||preparation.running)throw Error('A lesson or learning path is already being generated.');generationBusy=true;
+     try{if(b.track==='interview'&&((b.model&&b.model!=='gpt-6.1-sol')||![1,2].includes(b.preparationPolicy??2)))throw Error('Choose GPT-6.1 Sol and a $1 or $2 interview preparation budget before importing.');const planned=b.track==='interview'?await preparation.plan({policy:b.preparationPolicy??2,model:b.model||'gpt-6.1-sol',key:JSON.stringify({title:b.title,language:b.language,spec:b.spec,project:b.projectId})},ai=>library.importProject(b,{ai,singleQuestion:true})):null;const project=planned?.project||await library.importProject(b);let job=null;if(project.track==='interview'){const ticket=project.tickets.find(t=>t.id===planned?.ticket)||project.tickets.at(-1);job=await preparation.start({project:project.id,ticket:ticket.id,policy:b.preparationPolicy??2,model:b.model||'gpt-6.1-sol',seedRequests:planned.requests,importID:planned.importID});}return json(res,200,{project,preparation:job});}finally{generationBusy=false;}
+    case '/api/prepare':
+     if(generationBusy||preparation.running)throw Error('A lesson or path is already being prepared.');
+     return json(res,202,{preparation:await preparation.start({project:b.project,ticket:b.ticket,policy:b.policy,model:b.model})});
+    case '/api/prepare/stop':await preparation.stop({project:b.project,ticket:b.ticket});return json(res,200,{stopping:true});
     case '/api/prediction':
-     if(generationBusy)throw Error('A lesson or learning path is already being generated.');generationBusy=true;
+     if(library.project(b.project).track==='interview'&&!library.get(b.project,b.id)?.prediction?.code)throw Error('Prepare the interview core path first; unbudgeted prediction generation is disabled.');
+     if(generationBusy||preparation.running)throw Error('A lesson or learning path is already being generated.');generationBusy=true;
      try{return json(res,200,{lesson:publicLesson(await library.ensurePrediction(b.project,b.id,b.model)),progress:library.progress(b.project,b.id)});}finally{generationBusy=false;}
     case '/api/generate':
-     if(generationBusy)throw Error('A lesson or learning path is already being generated.');generationBusy=true;
+     if(library.project(b.project).track==='interview'&&!library.get(b.project,b.id)?.evidence)throw Error('Use Prepare all core lessons so the persistent question budget is enforced.');
+     if(generationBusy||preparation.running)throw Error('A lesson or learning path is already being generated.');generationBusy=true;
      try{return json(res,200,{lesson:publicLesson(await library.generate(b.project,b.id,b.model)),progress:library.progress(b.project,b.id),generationUsage:await lastGenerationUsage(workspace,b.project,b.id)});}finally{generationBusy=false;}
     case '/api/draft':return json(res,200,{progress:await library.saveDraft(b.project,b.id,b.stage,b.code)});
     case '/api/grade':return json(res,200,{result:await library.grade(b),progress:library.progress(b.project,b.id)});
@@ -91,7 +99,8 @@ const server=http.createServer(async(req,res)=>{
   }
   if(req.method==='GET'&&url.pathname.startsWith('/api/')){
    if(!cookie)return json(res,403,{error:'Open Concept Lab first.'});
-   if(url.pathname==='/api/status')return json(res,200,{...auth.status(),csrf,generationBusy,tutorBusy});
+   if(url.pathname==='/api/status')return json(res,200,{...auth.status(),csrf,generationBusy:generationBusy||preparation.running,tutorBusy});
+   if(url.pathname==='/api/preparation')return json(res,200,{preparation:await preparation.status(url.searchParams.get('project'),url.searchParams.get('ticket'))});
    if(url.pathname==='/api/models')return json(res,200,{models:ai.catalog||await ai.models()});
    if(url.pathname==='/api/projects')return json(res,200,{projects:library.data.projects,progress:library.data.progress,selection:await readJSON(workspace.resolve('.workspace/selection.json')),categories,runtimes:Object.fromEntries(Object.entries(runtimePaths()).filter(([key])=>['go','python','javac','cpp','rust'].includes(key)).map(([key,value])=>[key,!!value]))});
    if(url.pathname==='/api/lesson'){const project=url.searchParams.get('project'),id=url.searchParams.get('id');return json(res,200,{lesson:library.get(project,id)?.evidence?publicLesson(library.get(project,id)):null,needsAudit:!!library.get(project,id)&&!library.get(project,id).evidence,generationUsage:await lastGenerationUsage(workspace,project,id),progress:library.progress(project,id),chat:await workspace.conversation(library.project(project),id)});}
@@ -101,11 +110,11 @@ const server=http.createServer(async(req,res)=>{
    res.setHeader('Set-Cookie',`concept_session=${session}; HttpOnly; SameSite=Strict; Path=/`);
    res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"});return res.end(await readFile(path.join(directory,'public',pages[url.pathname])));
   }
-  if(req.method==='GET'&&['/app.js','/path.js','/learn.js','/problem.js','/style.css','/connect.js','/connect.css','/visual.js'].includes(url.pathname)){res.writeHead(200,{'Content-Type':url.pathname.endsWith('.js')?'text/javascript':'text/css','Cache-Control':'no-cache'});return res.end(await readFile(path.join(directory,'public',url.pathname)));}
+  if(req.method==='GET'&&['/app.js','/interview-resources.js','/path.js','/learn.js','/problem.js','/style.css','/connect.js','/connect.css','/visual.js'].includes(url.pathname)){res.writeHead(200,{'Content-Type':url.pathname.endsWith('.js')?'text/javascript':'text/css','Cache-Control':'no-cache'});return res.end(await readFile(url.pathname==='/interview-resources.js'?path.join(directory,'interview-resources.mjs'):path.join(directory,'public',url.pathname)));}
   json(res,404,{error:'Not found'});
  }catch(e){if(!res.headersSent)json(res,400,{error:e.message||'Request failed.',generationUsage:e.generationUsage});else res.end();}
 });
-let stopping=false;async function shutdown(){if(stopping)return;stopping=true;server.close(async()=>{await library.writes;await workspace.writes;await releaseWorkspaceLock();process.exit(0);});}
+let stopping=false;async function shutdown(){if(stopping)return;stopping=true;server.close(async()=>{await preparation.stop();await preparation.promise;await library.writes;await workspace.writes;await releaseWorkspaceLock();process.exit(0);});}
 process.on('SIGTERM',shutdown);process.on('SIGINT',shutdown);
 server.requestTimeout=240000;server.headersTimeout=15000;
 server.listen(port,host,()=>console.log(`Coding Made Easy ready at ${origin}`));

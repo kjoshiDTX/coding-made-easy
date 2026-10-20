@@ -15,6 +15,7 @@ test('HTTP app saves scoped completion, resume position and feedback across a se
  try{await start();let session=await login();const post=async(url,body,headers={})=>fetch(origin+url,{method:'POST',headers:{cookie:session.cookie,origin,'x-csrf-token':session.csrf,'content-type':'application/json',...headers},body:JSON.stringify(body)});
   assert.equal((await post('/api/done',{project:'minifhir',id:'program',stage:'learn',done:true},{'x-csrf-token':'bad'})).status,403);
   const unopened=await (await fetch(origin+'/api/lesson?project=minifhir&id=program',{headers:{cookie:session.cookie}})).json();assert.equal(unopened.lesson,null);assert.equal(unopened.needsAudit,true);
+  assert.equal((await post('/api/prepare',{project:'minifhir',ticket:'T1'})).status,400,'personal paths must not start eager interview generation');
   assert.equal((await post('/api/done',{project:'minifhir',id:'program',stage:'learn',done:true})).status,200);
   assert.equal((await post('/api/selection',{project:'minifhir',id:'program',stage:'practice'})).status,200);
   assert.equal((await post('/api/feedback',{project:'minifhir',id:'program',stage:'practice',note:'Test feedback in a disposable workspace'})).status,200);
