@@ -4,6 +4,7 @@
 
 Derived from aayush7511/concept-lab at 291a5a599b9b75bd1d6f6db8136209ceb3195d18; MIT license retained.
 
+- Created the public kjoshiDTX/coding-made-easy fork and published the first build on codex/coding-made-easy for draft PR review. Personal learning data stays outside the source repository.
 - Added project-name/specification inputs, personal and interview tracks, independent per-ticket prerequisite paths, optional selected read-only repo files, and the learner's byte-level BPE acceptance ticket.
 - Replaced production's single library file with immutable versioned JSON files under scoped track/project/ticket folders. An atomic catalog commits saves. Retained backup recovery and added one-way legacy progress migration with a preserved input archive; future schemas are rejected.
 - Separated OAuth credentials into a protected directory outside the learning folder; token handling remains server-side.
