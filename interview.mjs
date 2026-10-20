@@ -1,5 +1,16 @@
 // Interview paths teach a reusable pattern. Syntax refreshers are optional support.
 export const intervalSource='https://algs4.cs.princeton.edu/12oop/Interval1D.java.html';
+// Compact paths still explain syntax inline; those claims need language evidence
+// alongside the domain reference. Keep the bundle bounded and deduplicated.
+export const pythonInlineSources=[
+ 'https://docs.python.org/3/tutorial/introduction.html#lists',
+ 'https://docs.python.org/3/tutorial/controlflow.html#defining-functions'
+];
+export function lessonSourceUrls(project,concept){
+ const domain=/interval|closed.interval/i.test(concept.title)?[intervalSource]:[];
+ const inline=project.track==='interview'&&project.language==='python'?pythonInlineSources:[];
+ return [...new Set([...domain,...inline,...concept.sourceUrls])].slice(0,6);
+}
 export function planningPolicy(track,language){
  if(track!=='interview')return `For each personal project ticket work backwards from its concrete deliverable and construct a prerequisite-complete foundational curriculum for a learner new to ${language}. Aim for 15–40 concepts across a substantial specification, fewer when sufficient; do not pad a small task.`;
  return `INTERVIEW TRACK: First identify the underlying data structure and reusable algorithmic pattern targeted by each problem. Aim for 3–6 CORE concepts per ticket, maximum 8 including transitive prerequisites. Use fewer when sufficient. Build intuition from first principles: representation and essential operations; the pattern's trigger and mental model; the invariant and state transitions; independent application with edge cases and complexity. These are skills, not one module per detail in the target answer. For a data-structure problem teach its model and relevant operations before the algorithm. Explain necessary ${language} syntax inline in the first example, without assuming proficiency. Do not make installation, assignment, booleans, loops, functions, testing, or each edge case separate required concepts. Supply at most 3 OPTIONAL refreshers only when useful. Adjacent algorithms (e.g. event sweeps vs interval merging) belong to at most 2 optional extensions, not the prerequisite chain. Final practice must change the surface story or constraints to test transfer without revealing the target solution. Do not turn one question into a complete course in the language or data structure. Mark each concept kind as core, refresher, or extension. Ticket conceptIds include optional concepts for discoverability; core concepts must depend only on core concepts.`;

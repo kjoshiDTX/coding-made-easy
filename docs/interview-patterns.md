@@ -21,3 +21,5 @@ For the known old Python Merge Intervals path, an idempotent curriculum-v2 migra
 ## Source correction
 
 Select domain sources for domain rules and language sources for syntax. Interval lessons include Princeton's closed-interval reference before generation. Generated readings must stay within the supplied evidence; original deductions must show their reasoning and remain auditable. The semantic audit and exact-quote validation remain required. No automatic audit retries were added; failures cannot start an unbounded paid repair loop.
+
+Live follow-up: the first interval-model attempt supported the mathematics but correctly rejected unsourced inline Python syntax. Compact interview lessons now supplement domain references with the official Python tutorial's list/indexing and function sections. URLs are deduplicated and bounded to six; required inline sources take priority over extra planned references. This supports explaining syntax inline rather than restoring a long required syntax curriculum. The strict audit is unchanged.

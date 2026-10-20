@@ -1,5 +1,5 @@
 import path from 'node:path';
-import {planningPolicy,validateInterviewScope,refocusIntervalPlan,intervalSource} from './interview.mjs';
+import {planningPolicy,validateInterviewScope,refocusIntervalPlan,lessonSourceUrls} from './interview.mjs';
 import {trackGeneration} from './usage.mjs';
 import {categories} from './workspace.mjs';
 import {verifyEvidence} from './evidence.mjs';
@@ -115,7 +115,7 @@ export class Library{
   const p=this.project(projectID),c=p.concepts.find(c=>c.id===id);if(!c)throw Error('Concept not found.');
   const runtimeResources=this.workspace?await readJSON(this.workspace.resolve('cache/resources/qwen/ready.json')):null;
   if(/qwen/i.test(c.title)&&!runtimeResources)throw Error('Prepare the real tokenizer first: run npm run prepare-qwen from the platform folder. This is an explicit download and isolated Python dependency setup. No lesson credits were used.');
-  const anchors={program:'Packages',variables:'Variable_declarations',flow:'If_statements',loops:'For_statements',functions:'Function_declarations',slices:'Slice_types',structs:'Struct_types',pointers:'Pointer_types',methods:'Method_declarations',interfaces:'Interface_types'};const urls=[...c.sourceUrls];if(/interval|closed.interval/i.test(c.title)&&!urls.includes(intervalSource))urls.unshift(intervalSource);if(p.language==='go'&&anchors[id])urls.push('https://go.dev/ref/spec#'+anchors[id]);const notes=await Promise.all(urls.slice(0,3).map(url=>this.sourceNotes(url)));
+  const anchors={program:'Packages',variables:'Variable_declarations',flow:'If_statements',loops:'For_statements',functions:'Function_declarations',slices:'Slice_types',structs:'Struct_types',pointers:'Pointer_types',methods:'Method_declarations',interfaces:'Interface_types'};const urls=lessonSourceUrls(p,c);if(p.language==='go'&&anchors[id])urls.push('https://go.dev/ref/spec#'+anchors[id]);const notes=await Promise.all(urls.map(url=>this.sourceNotes(url)));
   if(notes.some(n=>!n.available))throw Error('A required source did not load. Lesson was not generated or saved.');
   const learner=this.workspace?await this.workspace.context(p,id):{};
   const instructions=`Write an original beginner lesson in ${p.language}. Return JSON only with this shape: {title,language,minutes,explanation:[2 short summary sentences for tutor context],learn:{overview,goals:[shortSkill],diagram:{title,steps:[{label,detail}]},sections:[{heading,points:[shortPoint],code:optionalShortSnippet}],misconception,takeaway,tryIt},example:{code:completeProgram,notes:[shortAnnotations]},prediction:{code:aDifferentCompleteProgram,question,expected:exactStdoutWithNewlines,explanation},guided:{prompt,problem:{title,description:[shortParagraph],signature,requirements:[rule],examples:[{input,output,explanation}],constraints:[constraint]},starter,reference,tests,hints:[conceptHint,reasoningHint,partialCodeHint]},practice:{prompt,problem:{title,description:[shortParagraph],signature,requirements:[rule],examples:[{input,output,explanation}],constraints:[constraint]},starter,reference,tests,hints:[conceptHint,reasoningHint,partialCodeHint]}}.

@@ -1,5 +1,11 @@
 # Changelog
 
+## Live interval source follow-up — 2026-10-20
+
+- A real generation passed executable checks but was correctly withheld by the source audit: interval rules were supported, while inline Python lists/indexing/functions lacked relevant excerpts.
+- Added bounded, deduplicated official Python list/indexing and function references for compact interview lessons, alongside domain sources. Source-audit requirements remain unchanged; no extra automatic generation or retry was added.
+- Added source-bundle regression coverage. See workspace verification notes for actual live usage and test results; the corrected bundle still needs a new live audit.
+
 ## Interview patterns and generation usage — 2026-10-20
 
 - Separated compact interview-pattern planning from project curricula, with optional refreshers/extensions and enforced per-ticket core bounds.

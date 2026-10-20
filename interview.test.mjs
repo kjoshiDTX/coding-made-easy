@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtemp,rm,readFile} from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import {planningPolicy,validateInterviewScope,refocusIntervalPlan,intervalSource} from './interview.mjs';
+import {planningPolicy,validateInterviewScope,refocusIntervalPlan,intervalSource,lessonSourceUrls,pythonInlineSources} from './interview.mjs';
 import {corePath,firstConcept,navigationPath} from './public/path.js';
 import {Library} from './library.mjs';
 import {Workspace} from './workspace.mjs';
@@ -63,6 +63,17 @@ test('interval generation supplies a domain source even when an old plan only ci
  library.data={projects:[fixture()],lessons:{},progress:{}};
  library.sourceNotes=async url=>({url,available:true,excerpt:'Source '.repeat(30)});
  await assert.rejects(library.generate('intervals','c12'),/synthetic stop/);
- assert.equal(JSON.parse(request.input[0].content).sources[0].url,intervalSource);
+ const urls=JSON.parse(request.input[0].content).sources.map(n=>n.url);assert.equal(urls[0],intervalSource);for(const url of pythonInlineSources)assert.ok(urls.includes(url));
  assert.match(request.instructions,/Use only technical rules supported by the supplied excerpts/);
+});
+
+test('inline Python syntax sources supplement compact interview lessons without duplicating URLs',()=>{
+ const concept={title:'Intervals as a data structure',sourceUrls:[intervalSource,...pythonInlineSources]};
+ const interview=lessonSourceUrls({track:'interview',language:'python'},concept);
+ assert.equal(new Set(interview).size,interview.length);for(const url of pythonInlineSources)assert.ok(interview.includes(url));
+ const personal=lessonSourceUrls({track:'personal',language:'python'},{title:'Encoding',sourceUrls:['https://docs.python.org/3/library/stdtypes.html#bytes']});
+ assert.equal(personal.length,1);
+ const other=lessonSourceUrls({track:'interview',language:'go'},{title:'Intervals',sourceUrls:['https://go.dev/ref/spec']});
+ assert.ok(other.includes(intervalSource));assert.ok(!other.some(url=>url.includes('python.org')));
+ const many=lessonSourceUrls({track:'interview',language:'python'},{title:'List model',sourceUrls:Array.from({length:8},(_,i)=>'https://docs.python.org/3/?'+i)});assert.ok(many.length<=6);for(const url of pythonInlineSources)assert.ok(many.includes(url));
 });
