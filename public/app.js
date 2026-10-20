@@ -128,8 +128,10 @@ function displayPreparation(job){
  if(job)$('#preparation-budget').value=String(job.policy);
  $('#prepare-path').disabled=active||job?.status==='ready';$('#prepare-path').textContent=job?.status==='ready'?'All core lessons ready':job?'Resume within remaining budget':'Prepare all core lessons';
  $('#stop-preparation').hidden=!active;
+ const planLimited=job?.error?.includes('subscription_sharing_usage_limit_exceeded');$('#preparation-usage-link').hidden=!planLimited;
+ const message=planLimited?'ChatGPT plan-sharing usage limit reached. Review Usage settings (an app-specific limit may apply), then resume when available.':job?.error;
  const used=job?.requests?.reduce((s,r)=>({input:s.input+r.input,output:s.output+r.output}),{input:0,output:0});
- $('#preparation-status').textContent=job?`${count} / ${total} core lessons ready · ${job.status} · ${job.requests.length} / 24 requests${used?` · ${used.input.toLocaleString()} input / ${used.output.toLocaleString()} output tokens used or reserved`:''}${job.error?` · ${job.error}`:''}`:'All core lessons prepare together, with a maximum of 8. Saved, audited lessons are reused. No automatic retries.';
+ $('#preparation-status').textContent=job?`${count} / ${total} core lessons ready · ${job.status} · ${job.requests.length} / 24 requests${used?` · ${used.input.toLocaleString()} input / ${used.output.toLocaleString()} output tokens used or reserved`:''}${message?` · ${message}`:''}`:'All core lessons prepare together, with a maximum of 8. Saved, audited lessons are reused. No automatic retries.';
 }
 async function refreshPreparation(){
  clearTimeout(preparationTimer);$('#preparation-panel').hidden=state.project.track!=='interview';if(state.project.track!=='interview')return;

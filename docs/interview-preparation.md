@@ -34,3 +34,7 @@ Research through the learner's Ego browser:
 - Tech Interview Handbook and official language documentation remain available. Supplemental resources are explicitly distinguished from fetched and audited lesson evidence; worked solutions stay behind an optional disclosure.
 
 Interview generation now asks for a recognition cue, an intuitive state/invariant trace, a justified contrast with a tempting alternative, one-rule Modify, and independent transfer Practice with less scaffolding. Prior saved prerequisite goals/summaries help maintain continuity. These strengthen the existing four-stage workflow without expanding the required concept count, changing the learner profile or inventing proficiency.
+
+## Live check
+
+The existing first interval lesson was reused. Preparation reached the provider for Ordering, but OpenAI returned `subscription_sharing_usage_limit_exceeded` without usage totals. The job paused immediately and retained the full conservative reservation (73,686 input / 8,000 output); those are reserved capacity, not measured spend. No automatic retry followed. The UI links to ChatGPT Usage settings. [Official recovery guidance](https://developers.openai.com/siwc/token-sharing-open-source/errors-and-recovery) says this may be app-specific and does not establish a reset time or an exhausted entire plan. No successful Ordering lesson or remaining full batch is claimed.
