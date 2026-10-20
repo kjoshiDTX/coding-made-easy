@@ -1,5 +1,11 @@
 # Changelog
 
+## Visual refresh — 2026-10-20
+
+- Established an ivory, espresso, and bronze identity with a custom typographic monogram, editorial serif headings, warm paper readings, a dark working editor, and a light tutor panel.
+- Restyled navigation, stage controls, lesson preparation, interactive visuals, dialogs, and mobile layouts without changing application behavior or storage.
+- Validation: full regression suite and browser checks recorded in the workspace verification notes.
+
 ## 0.2.0 — 2026-10-20
 
 Derived from aayush7511/concept-lab at 291a5a599b9b75bd1d6f6db8136209ceb3195d18; MIT license retained.
