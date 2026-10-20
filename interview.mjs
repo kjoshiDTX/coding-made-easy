@@ -4,7 +4,9 @@ export const intervalSource='https://algs4.cs.princeton.edu/12oop/Interval1D.jav
 // alongside the domain reference. Keep the bundle bounded and deduplicated.
 export const pythonInlineSources=[
  'https://docs.python.org/3/tutorial/introduction.html#lists',
- 'https://docs.python.org/3/tutorial/controlflow.html#defining-functions'
+ 'https://docs.python.org/3/tutorial/controlflow.html#defining-functions',
+ 'https://docs.python.org/3/reference/expressions.html#comparisons',
+ 'https://docs.python.org/3/reference/expressions.html#boolean-operations'
 ];
 export function lessonSourceUrls(project,concept){
  const domain=/interval|closed.interval/i.test(concept.title)?[intervalSource]:[];

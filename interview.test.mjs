@@ -63,7 +63,7 @@ test('interval generation supplies a domain source even when an old plan only ci
  library.data={projects:[fixture()],lessons:{},progress:{}};
  library.sourceNotes=async url=>({url,available:true,excerpt:'Source '.repeat(30)});
  await assert.rejects(library.generate('intervals','c12'),/synthetic stop/);
- const urls=JSON.parse(request.input[0].content).sources.map(n=>n.url);assert.equal(urls[0],intervalSource);for(const url of pythonInlineSources)assert.ok(urls.includes(url));
+ const urls=JSON.parse(request.input[0].content).sources.map(n=>n.url);assert.equal(urls[0],intervalSource);for(const url of pythonInlineSources)assert.ok(urls.includes(url));assert.ok(urls.includes('https://docs.python.org/3/reference/expressions.html#comparisons'));assert.ok(urls.includes('https://docs.python.org/3/reference/expressions.html#boolean-operations'));
  assert.match(request.instructions,/Use only technical rules supported by the supplied excerpts/);
 });
 

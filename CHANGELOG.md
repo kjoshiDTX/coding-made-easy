@@ -1,5 +1,11 @@
 # Changelog
 
+## Python Boolean evidence follow-up — 2026-10-20
+
+- A second explicitly approved interval attempt passed executable checks but was withheld for missing source support for Python Boolean comparison results and `and` semantics.
+- Added the language reference comparison and Boolean-operation sections to the bounded inline-source bundle; verified their retrieved excerpts explicitly contain the needed rules. Kept strict auditing and the six-reference limit.
+- Added regressions requiring these references in the generation input. No third paid attempt was run; the complete end-to-end generation fix remains unverified.
+
 ## Live interval source follow-up — 2026-10-20
 
 - A real generation passed executable checks but was correctly withheld by the source audit: interval rules were supported, while inline Python lists/indexing/functions lacked relevant excerpts.
